@@ -3,7 +3,7 @@
 // ============================================
 
 // توکن ربات را از متغیر محیطی دریافت کنید
-const BOT_TOKEN = '8639365110:AAFtzcO4DWztQxUVpq4oO4bcOzQHdXI22X8'; 
+const BOT_TOKEN = env.8639365110:AAFtzcO4DWztQxUVpq4oO4bcOzQHdXI22X8; // در Cloudflare Dashboard مقداردهی شود
 const WEBHOOK_PATH = '/webhook'; // مسیر webhook (می‌توانید تغییر دهید)
 
 // ------------------------------------------------------------------
