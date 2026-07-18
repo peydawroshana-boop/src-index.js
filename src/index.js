@@ -2,21 +2,20 @@
 // ربات تلگرام روی Cloudflare Worker
 // ============================================
 
-// توکن ربات را از متغیر محیطی دریافت کنید
-const BOT_TOKEN = env.8639365110:AAFtzcO4DWztQxUVpq4oO4bcOzQHdXI22X8; // در Cloudflare Dashboard مقداردهی شود
-const WEBHOOK_PATH = '/webhook'; // مسیر webhook (می‌توانید تغییر دهید)
+// توکن ربات را مستقیماً اینجا قرار دهید (مخزن حتماً پرایوت باشد)
+const BOT_TOKEN = '8639365110:AAFtzcO4DWztQxUVpq4oO4bcOzQHdXI22X8';  // ← توکن واقعی خودت رو جایگزین کن
+const WEBHOOK_PATH = '/webhook';
 
 // ------------------------------------------------------------------
 // تابع اصلی برای پردازش درخواست‌ها
 // ------------------------------------------------------------------
-async function handleRequest(request, env) {
+async function handleRequest(request) {
   const url = new URL(request.url);
   const path = url.pathname;
 
   // ---------- درخواست GET: راهنما یا تنظیم webhook ----------
   if (request.method === 'GET') {
     if (path === '/setwebhook') {
-      // تنظیم خودکار webhook در تلگرام
       const webhookUrl = `https://${url.hostname}${WEBHOOK_PATH}`;
       const apiUrl = `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`;
       const response = await fetch(apiUrl);
@@ -26,7 +25,6 @@ async function handleRequest(request, env) {
       });
     }
 
-    // صفحه اصلی (راهنما)
     return new Response(
       `🤖 ربات تلگرام فعال است!\n\n` +
       `• برای تنظیم webhook: GET /setwebhook\n` +
@@ -42,12 +40,10 @@ async function handleRequest(request, env) {
       const body = await request.json();
       console.log('دریافت پیام:', body);
 
-      // اگر پیام وجود داشته باشد
       if (body.message) {
         const chatId = body.message.chat.id;
         const text = body.message.text || '';
 
-        // پاسخ بر اساس متن پیام
         let reply = '';
         if (text === '/start') {
           reply = '👋 سلام! به ربات ساده خوش آمدید.\nاز دستور /help برای راهنما استفاده کنید.';
@@ -59,11 +55,9 @@ async function handleRequest(request, env) {
           reply = `🔁 شما گفتید: "${text}"\n(این یک پاسخ خودکار است)`;
         }
 
-        // ارسال پاسخ به تلگرام
         await sendMessage(chatId, reply);
       }
 
-      // به تلگرام تأیید می‌دهیم که درخواست با موفقیت دریافت شد
       return new Response('OK', { status: 200 });
     } catch (error) {
       console.error('خطا در پردازش webhook:', error);
@@ -71,7 +65,6 @@ async function handleRequest(request, env) {
     }
   }
 
-  // مسیر نامعتبر
   return new Response('Not Found', { status: 404 });
 }
 
@@ -83,7 +76,7 @@ async function sendMessage(chatId, text) {
   const payload = {
     chat_id: chatId,
     text: text,
-    parse_mode: 'HTML', // اختیاری
+    parse_mode: 'HTML',
   };
   await fetch(url, {
     method: 'POST',
@@ -97,10 +90,7 @@ async function sendMessage(chatId, text) {
 // ------------------------------------------------------------------
 export default {
   async fetch(request, env) {
-    // تنظیم متغیر محیطی BOT_TOKEN در Cloudflare
-    if (!env.BOT_TOKEN) {
-      return new Response('❌ متغیر محیطی BOT_TOKEN تنظیم نشده است.', { status: 500 });
-    }
-    return handleRequest(request, env);
+    // چون توکن مستقیم در کد هست، نیازی به env نداریم
+    return handleRequest(request);
   },
 };
